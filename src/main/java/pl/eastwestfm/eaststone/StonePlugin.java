@@ -28,65 +28,64 @@ import pl.eastwestfm.eaststone.util.Logger;
 
 public class StonePlugin extends JavaPlugin {
 
-	@Getter
-	private static StonePlugin inst;
-
-	static @Getter
-	private Data data;
-	
-	static @Getter
-	private Config cfg;
-
+    @Getter
+    private static StonePlugin inst;
 
     @Getter
-    public MySQLData mySQLService = new MySQLData(cfg.databaseHost, cfg.databasePort, cfg.databaseUser, cfg.databaseBase, cfg.databasePass);
+    private static Data data;
 
-	@Getter
-	private static List<StoneLocal> stoneLocals = new ArrayList<StoneLocal>();
+    @Getter
+    private static Config cfg;
 
+    @Getter
+    private static MySQLData mySQLService;
 
-	@Override
-	public void onEnable() {
-		inst = this;
-		this.saveDefaultConfig();
-		cfg = new Config();
-		
-		switch (DataMode.getDataMode(cfg.databaseMode)) {
-		case YAML:
-			data = new YAMLData(cfg.databaseName);
-			break;
-		case SQLITE:
-			data = new SQLData(cfg.databaseName);
-			break;
-		case JSON:
-			data = new JSONData(cfg.databaseName);
-			break;
-        case MYSQL:
-            data = new StoneData();
-            break;
-		default:
-			Logger.log(Level.WARNING, "Wybrano bledny tryb zapisu danych!", "Rozpoczeto uzywanie zapisu YAML!");
-			data = new YAMLData(cfg.databaseName);
-			break;
-		}
-		
-		stoneLocals = data.loadStones();
+    @Getter
+    private static List<StoneLocal> stoneLocals = new ArrayList<StoneLocal>();
 
-		Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), this);
-		Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), this);
-		Bukkit.getPluginManager().registerEvents(new EntityExplodeListener(), this);
-		Bukkit.getPluginManager().registerEvents(new PistonExtendListener(), this);
-		
-		this.getCommand("stonereload").setExecutor(new StoneReloadCommand());
-		
-		Crafting.createRecipe();
-	}
+    @Override
+    public void onEnable() {
+        inst = this;
+        this.saveDefaultConfig();
+        cfg = new Config();
 
-	@Override
-	public void onDisable() {
+        // Inicjalizacja MySQL po stworzeniu cfg
+        mySQLService = new MySQLData(cfg.databaseHost, cfg.databasePort, cfg.databaseUser, cfg.databaseBase, cfg.databasePass);
 
-		data.saveStones();
+        switch (DataMode.getDataMode(cfg.databaseMode)) {
+            case YAML:
+                data = new YAMLData(cfg.databaseName);
+                break;
+            case SQLITE:
+                data = new SQLData(cfg.databaseName);
+                break;
+            case JSON:
+                data = new JSONData(cfg.databaseName);
+                break;
+            case MYSQL:
+                data = new StoneData();
+                break;
+            default:
+                Logger.log(Level.WARNING, "Wybrano bledny tryb zapisu danych!", "Rozpoczeto uzywanie zapisu YAML!");
+                data = new YAMLData(cfg.databaseName);
+                break;
+        }
 
-	}
+        stoneLocals = data.loadStones();
+
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EntityExplodeListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PistonExtendListener(), this);
+
+        this.getCommand("stonereload").setExecutor(new StoneReloadCommand());
+
+        Crafting.createRecipe();
+    }
+
+    @Override
+    public void onDisable() {
+        data.saveStones();
+    }
 
 }

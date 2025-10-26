@@ -12,10 +12,10 @@ database:
 
   host: mysql.titanaxe.com
   port: 3306
-  pass: asdasdas
-  user: adasasa
-  base: 12321123
-  
+  pass: bgFr6Qpu
+  user: srv316058
+  base: srv316058
+
 generator:
 
   #Czas odnowienia sie stone (w sekundach)
@@ -23,7 +23,7 @@ generator:
   
   #Wytrzymalosc generatora
   durability: 10
-  
+
 crafting:
   
   #Przedmiot, ktory otrzymamy w crafitngu
@@ -34,7 +34,7 @@ crafting:
   
   #Opis przedmiotu
   lore:
-  - '&7Postaw na ziemi i stworz generator stone!'
+    - '&7Postaw na ziemi i stworz generator stone!'
   
   #Poszczegolne sloty w craftingu
   # 1|2|3

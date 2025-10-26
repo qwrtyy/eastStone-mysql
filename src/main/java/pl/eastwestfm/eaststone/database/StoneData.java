@@ -4,71 +4,88 @@ import org.bukkit.Location;
 import pl.eastwestfm.eaststone.StonePlugin;
 import pl.eastwestfm.eaststone.data.StoneLocal;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class StoneData implements Data {
-    private static final List<StoneLocal> stones = new ArrayList<>();
 
+    private final List<StoneLocal> stones = new ArrayList<>();
 
     @Override
     public void createStone(Location loc) {
-        StoneLocal s = new StoneLocal(loc);
-        StonePlugin.getStoneLocals().add(s);
-        StonePlugin.getInst().mySQLService.executeUpdate("INSERT INTO `spigot_stones` (`id`, `world`, `x`, `y`, `z`) VALUES (NULL, '" + loc.getWorld() + "', '" + loc.getX() + "', '" + loc.getY() + "', '" + loc.getZ() + "');");
-    }
+        StoneLocal stone = new StoneLocal(loc);
+        StonePlugin.getStoneLocals().add(stone);
 
-    @Override
-    public void deleteStone(StoneLocal s) {
-        try {
-            StonePlugin.getInst().mySQLService.executeUpdate("DELETE FROM `spigot_stones` WHERE `world`='" + s.getWorld() + "' AND `x`='" + s.getX() + "' AND `y`='" + s.getY() + "' AND `z`='" + s.getZ() + "'");
-            StonePlugin.getStoneLocals().remove(s);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        try (PreparedStatement ps = StonePlugin.getMySQLService().getDataSource().getConnection()
+                .prepareStatement("INSERT INTO spigot_stones (world, x, y, z) VALUES (?, ?, ?, ?)")) {
+            ps.setString(1, loc.getWorld().getName());
+            ps.setDouble(2, loc.getX());
+            ps.setDouble(3, loc.getY());
+            ps.setDouble(4, loc.getZ());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
+    @Override
+    public void deleteStone(StoneLocal stone) {
+        try (PreparedStatement ps = StonePlugin.getMySQLService().getDataSource().getConnection()
+                .prepareStatement("DELETE FROM spigot_stones WHERE world = ? AND x = ? AND y = ? AND z = ?")) {
+            ps.setString(1, stone.getWorld());
+            ps.setDouble(2, stone.getX());
+            ps.setDouble(3, stone.getY());
+            ps.setDouble(4, stone.getZ());
+            ps.executeUpdate();
+
+            StonePlugin.getStoneLocals().remove(stone);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public StoneLocal getStone(Location loc) {
-        for (StoneLocal s : StonePlugin.getStoneLocals())
-            if (s.getLocation().equals(loc))
-                return s;
-        return null;
+        Optional<StoneLocal> optional = StonePlugin.getStoneLocals().stream()
+                .filter(s -> s.getLocation().equals(loc))
+                .findFirst();
+        return optional.orElse(null);
     }
 
     @Override
     public boolean isStone(Location loc) {
-        for (StoneLocal s : StonePlugin.getStoneLocals())
-            if (s.getLocation().equals(loc))
-                return true;
-        return false;
+        return StonePlugin.getStoneLocals().stream()
+                .anyMatch(s -> s.getLocation().equals(loc));
     }
 
-
-    // nie uzywam bo odrazu dodaje do bazy.
     @Override
     public void saveStone(StoneLocal s) {
+        // Nieużywane, bo zapis od razu do bazy
     }
 
     @Override
     public void saveStones() {
+        // Nieużywane, bo zapis od razu do bazy
     }
 
     @Override
     public List<StoneLocal> loadStones() {
-        StonePlugin.getInst().getMySQLService().executeQuery("SELECT * FROM `spigot_stones`", rs -> {
+        stones.clear();
+        StonePlugin.getMySQLService().executeQuery("SELECT * FROM spigot_stones", rs -> {
             try {
                 while (rs.next()) {
-                    StoneLocal stonesData = new StoneLocal(rs);
-                    stones.add(stonesData);
+                    StoneLocal stone = new StoneLocal(rs);
+                    stones.add(stone);
                 }
-                rs.close();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                try { rs.close(); } catch (Exception ignored) {}
             }
         });
-        return Collections.emptyList();
+        return new ArrayList<>(stones);
     }
 }

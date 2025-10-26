@@ -1,6 +1,7 @@
 package pl.eastwestfm.eaststone.database;
 
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -10,6 +11,8 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class MySQLData {
+
+    @Getter
     public HikariDataSource dataSource;
 
     public MySQLData(String mysqlHost, Integer mysqlPort, String mysqlUser, String mysqlName, String mysqlPassword) {
