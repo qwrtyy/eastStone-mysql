@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'pl.qwrtyy'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly files('manual-libs/engine.jar')
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    implementation 'com.zaxxer:HikariCP:4.0.3'
+}
+
+test {
+    useJUnitPlatform()
+}
