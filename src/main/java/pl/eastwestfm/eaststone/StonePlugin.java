@@ -11,7 +11,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import pl.eastwestfm.eaststone.commands.StoneReloadCommand;
 import pl.eastwestfm.eaststone.data.StoneLocal;
-import pl.eastwestfm.eaststone.database.MySQLData;
 import pl.eastwestfm.eaststone.database.Data;
 import pl.eastwestfm.eaststone.database.DataMode;
 import pl.eastwestfm.eaststone.database.JSONData;
@@ -38,19 +37,13 @@ public class StonePlugin extends JavaPlugin {
     private static Config cfg;
 
     @Getter
-    private static MySQLData mySQLService;
-
-    @Getter
-    private static List<StoneLocal> stoneLocals = new ArrayList<StoneLocal>();
+    private static List<StoneLocal> stoneLocals = new ArrayList<>();
 
     @Override
     public void onEnable() {
         inst = this;
         this.saveDefaultConfig();
         cfg = new Config();
-
-        // Inicjalizacja MySQL po stworzeniu cfg
-        mySQLService = new MySQLData(cfg.databaseHost, cfg.databasePort, cfg.databaseUser, cfg.databaseBase, cfg.databasePass);
 
         switch (DataMode.getDataMode(cfg.databaseMode)) {
             case YAML:
@@ -63,7 +56,7 @@ public class StonePlugin extends JavaPlugin {
                 data = new JSONData(cfg.databaseName);
                 break;
             case MYSQL:
-                data = new StoneData();
+                data = new StoneData(cfg.databaseHost, cfg.databasePort, cfg.databaseUser, cfg.databaseBase, cfg.databasePass);
                 break;
             default:
                 Logger.log(Level.WARNING, "Wybrano bledny tryb zapisu danych!", "Rozpoczeto uzywanie zapisu YAML!");
