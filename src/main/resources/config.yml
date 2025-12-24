@@ -6,7 +6,7 @@ database:
   #Nazwa bazy danych (pliku)
   name: 'generators'
   
-  #Czas automatycznego zapisu generatorow (w minutach)
+  #Czas automatycznego zapisu generatorow w minutach (nie obsługiwane w mysql)
   auto-save-time: 5
 
 
